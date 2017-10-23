@@ -1,4 +1,5 @@
 import subprocess
+import sys
 import re
 
 class Wyndex:
@@ -18,19 +19,50 @@ class Wyndex:
         self.__lint_coffee()
         self.__lint_stylus()
         self.__find_dot_only()
-        #self.__find_debuggers()
+        self.__find_debuggers()
 
     def run_tests(self):
-        """ docString. """
-        __test_files = 'test files!!!!!'
-        # self.__run_client_tests()
-        # self.__run_server_tests()
-        # self.__run_integration_tests()
+        """ Runs Client, Server, Integration tests. """
+        self.__run_server_tests()
+        self.__run_client_tests()
+        self.__run_integration_tests()
 
     def clean_code(self):
-        """ docString. """
+        """ Runs Linter and Checks tests """
         self.lint_changes()
-        # self.run_tests()
+        self.run_tests()
+        print '\n>> \33[32m' + 'Complete.\n' + '\33[0m'
+
+    @staticmethod
+    def get_previous_commit():
+        if subprocess.call(['git', 'rev-parse', '--verify HEAD']):
+            against = 'HEAD'
+        else:
+            against = "4b825dc642cb6eb9a060e54bf8d69288fbee4904"
+
+        return against
+
+    @staticmethod
+    def get_files_with_changes(previous_commit):
+        """ @Returns: A list of files with changes """
+
+        get_files = subprocess.check_output([
+            'git', 'diff', '--name-only',
+            '--diff-filter=ACMRTUXB', previous_commit])
+        files = get_files.split()
+
+        files_dict = dict()
+        coffee_files = [f for f in files if '.coffee' in f]
+        stylus_files = [f for f in files if '.styl' in f]
+        test_files = [f for f in files if '.test.' in f]
+
+        files_dict['all'] = files
+        files_dict['coffee'] = coffee_files
+        files_dict['stylus'] = stylus_files
+        files_dict['test'] = test_files
+
+        return files_dict
+
 
     def __lint_coffee(self):
         print '> \33[36m' + 'Linting CoffeeScript...' + '\33[0m'
@@ -51,83 +83,53 @@ class Wyndex:
                 styl_file], cwd='./')
 
     def __find_dot_only(self):
-        print '> \33[36m' + 'Checking for `.only`...' + '\33[0m'
-        test_files = self.__files['test']
-        for test in test_files:
+        print '> \33[36m' + 'Searching for `.only`...' + '\33[0m'
+
+        for test in self.__files['test']:
             with open(test) as test_file:
-                print test_file
-                # TODO
-                """
-                 read line by line for .only
-                  if line =~ /(describe|it|context)\.only/i
-                    line_num += 1
-                    abort "\n Found `.only` \n \33[31m ##{line_num}: \33[0m#{file}"
-                """
-
-        """
-            ...
-            test_file.each_line.with_index do |line, line_num|
-              if line =~ /(describe|it|context)\.only/i
-                line_num += 1
-                abort "\n Found `.only` \n \33[31m ##{line_num}: \33[0m#{file}"
-              end
-            end
-
-          end
-        end
-        puts "OK!"
-        """
+                for idx, line in enumerate(test_file):
+                    if re.match("(it|describe|context)\.only", line) is not None:
+                        print('Found `.only`' + '\33[33m #{}:\33[31m {}\33[0m \n'.format(idx, test))
 
     def __find_debuggers(self):
         print '> \33[36m' + 'Searching for debuggers...' + '\33[0m'
-        return self.__files
 
-    def __get_test_files(self):
-        regex = re.compile('/*.test.*')
-        x = filter(regex.match, self.__files)
+        regex = re.compile('(\.coffee|\.js)$')
+        script_files = filter(regex.search, self.__files['all'])
 
-    @staticmethod
-    def get_previous_commit():
-        if subprocess.call(['git', 'rev-parse', '--verify HEAD']):
-            against = 'HEAD'
-        else:
-            against = "4b825dc642cb6eb9a060e54bf8d69288fbee4904"
+        for script in script_files:
+            with open(script):
+                for idx, line in enumerate(script):
+                    if re.match("debugger", line) is not None:
+                        print('Found `debugger`' + '\33[33m #{}:\33[31m {}\33[0m \n'.format(idx, file))
 
-        return against
+    def __run_integration_tests(self):
+        regex = re.compile('/integration/')
+        integration_tests = filter(regex.search, self.__files['test'])
 
-    @staticmethod
-    def get_files_with_changes(previous_commit):
-        """ Returns files with changes since the last commit """
+        if len(integration_tests) > 0:
+            print '> \33[36m' + 'Running Integration Tests...' + '\33[0m'
 
-        get_files = subprocess.check_output([
-            'git', 'diff', '--name-only',
-            '--diff-filter=ACMRTUXB', previous_commit])
-        files = get_files.split()
+            for test in integration_tests:
+                subprocess.check_output(['mocha', test])
 
-        files_dict = dict()
-        coffee_files = [f for f in files if '.coffee' in f]
-        stylus_files = [f for f in files if '.styl' in f]
-        test_files = [f for f in files if '.test.*' in f]
+    def __run_server_tests(self):
+        regex = re.compile('/server/')
+        server_tests = filter(regex.search, self.__files['test'])
 
-        files_dict['all'] = files
-        files_dict['coffee'] = coffee_files
-        files_dict['stylus'] = stylus_files
-        files_dict['test'] = test_files
+        if len(server_tests) > 0:
+            print '> \33[36m' + 'Running Server Tests...' + '\33[0m'
 
-        return files_dict
+            for test in server_tests:
+                subprocess.check_output(['mocha', test])
 
+    def __run_client_tests(self):
+        regex = re.compile('/client/')
+        client_files = filter(regex.search, self.__files['test'])
 
-    @staticmethod
-    def __run_client_tests():
-        subprocess.call(['make', 'test-client'])
-
-    @staticmethod
-    def __run_server_tests():
-        subprocess.call(['make', 'test-server'])
-
-    @staticmethod
-    def __run_integration_tests():
-        subprocess.call(['make', 'test-integration'])
+        if len(client_files) > 0:
+            print '> \33[36m' + 'Running Client Tests...' + '\33[0m'
+            subprocess.call(['make', 'test-client'])
 
 
 Wyndex().clean_code()
