@@ -11,26 +11,30 @@ class Wyndex:
         """
         self.__files = self.get_files_with_changes('HEAD^')
 
-    def lint_changes(self):
+
+    @classmethod
+    def lint_changes(cls):
         """ lint_changes:
         lint files --  stylus,  coffee
         checks for --  dot_only, debuggers
         """
-        self.__lint_coffee()
-        self.__lint_stylus()
-        self.__find_dot_only()
-        self.__find_debuggers()
+        cls().__lint_coffee()
+        cls().__lint_stylus()
+        cls().__find_dot_only()
+        cls().__find_debuggers()
 
     def run_tests(self):
         """ Runs Client, Server, Integration tests. """
         self.__run_server_tests()
         self.__run_client_tests()
-        self.__run_integration_tests()
+        # self.__run_integration_tests()
 
-    def clean_code(self):
+
+    @classmethod
+    def clean_code(cls):
         """ Runs Linter and Checks tests """
-        self.lint_changes()
-        self.run_tests()
+        cls().lint_changes()
+        cls().run_tests()
         print '\n>> \33[32m' + 'Complete.\n' + '\33[0m'
 
     @staticmethod
@@ -62,7 +66,6 @@ class Wyndex:
         files_dict['test'] = test_files
 
         return files_dict
-
 
     def __lint_coffee(self):
         print '> \33[36m' + 'Linting CoffeeScript...' + '\33[0m'
@@ -132,4 +135,4 @@ class Wyndex:
             subprocess.call(['make', 'test-client'])
 
 
-Wyndex().clean_code()
+Wyndex.lint_changes()
