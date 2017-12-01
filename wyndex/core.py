@@ -1,11 +1,8 @@
 import subprocess
 import re
 
-class Wyndex:
-    # TODO
-    """
-    Pass flag to change if module will respect the returned exitcode
-    """
+
+class Wyndex(object):
     def __init__(self, *args, **kwargs):
         """
         Arguments:
