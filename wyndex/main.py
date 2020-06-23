@@ -1,7 +1,7 @@
 import subprocess
 import re
 
-class Wyndex(object):
+class Wyndx(object):
     def __init__(self, *args, **kwargs):
         """
         Arguments:
