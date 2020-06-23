@@ -1,4 +1,4 @@
-import Wyndex.main as wyndex
+from wyndex import main as wyndex
 import argparse
 
 parser = argparse.ArgumentParser(
@@ -19,5 +19,9 @@ args = parser.parse_args()
 if args.SHA:
     wyndex(SHA=args.SHA)
 else:
-    wyndex(args.files)
+    if args.files:
+        wyndex(args.files)
+    else:
+        parser.print_help()
+
 

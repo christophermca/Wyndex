@@ -1,7 +1,6 @@
 import subprocess
 import re
 
-
 class Wyndex(object):
     def __init__(self, *args, **kwargs):
         """
@@ -123,7 +122,7 @@ class Wyndex(object):
 
     def __find_debuggers(self):
         print('> \33[36m' + 'Searching for debuggers...' + '\33[0m')
-        print self.__files
+        print(self.__files)
 
         for scriptType in self.__files['scripts']:
             scripts = self.__files['scripts'][scriptType]
@@ -160,5 +159,5 @@ class Wyndex(object):
         client_files = filter(regex.search, self.__files['test'])
 
         if len(client_files) > 0:
-            print '> \33[36m' + 'Running Client Tests...' + '\33[0m'
+            print('> \33[36m' + 'Running Client Tests...' + '\33[0m')
             subprocess.call(['make', 'test-client'])
