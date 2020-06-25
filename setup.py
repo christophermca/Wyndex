@@ -11,7 +11,7 @@ setuptools.setup(
     description="Keeping the codebase clean",
     long_description=long_description,
     long_description_content_type="text/markdown",
-    url="https://github.com/pypa/sampleproject",
+    url="https://github.com/christophermca/Wyndex",
     packages=setuptools.find_packages(),
     classifiers=[
         "Programming Language :: Python :: 3",

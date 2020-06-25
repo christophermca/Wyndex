@@ -1,4 +1,3 @@
-from wyndex import main as wyndex
 import argparse
 
 parser = argparse.ArgumentParser(
