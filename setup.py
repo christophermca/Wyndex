@@ -4,7 +4,7 @@ with open("README.md", "r") as fh:
     long_description = fh.read()
 
 setuptools.setup(
-    name="wyndex", # Replace with your own username
+    name="wyndex",
     version="0.0.1",
     author="Christopher McAdams",
     author_email="mca.christopher@gmail.com",
